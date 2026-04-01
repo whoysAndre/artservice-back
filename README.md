@@ -54,6 +54,8 @@ Open this URL in your browser (requires a Google account):
 https://artservice-back.onrender.com/api/auth/google
 ```
 
+> ⚠️ **Use a test Google account, not your personal one.** The API stores your email and name, and the contact endpoint can send emails to your address.
+
 After Google login the browser shows:
 
 ```json
@@ -76,6 +78,8 @@ PATCH /api/users/me/role
 ```
 
 The response includes a **fresh JWT** with the new role — copy it and re-authorize in Swagger.
+
+> ⚠️ **After changing your role, always re-authorize with the new token.** The role is embedded in the JWT — using the old token will still show the previous role and may cause `403 Forbidden` errors on role-restricted endpoints.
 
 ---
 
