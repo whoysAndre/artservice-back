@@ -24,7 +24,7 @@ export class ContactService {
       throw new NotFoundException('Perfil de developer no encontrado');
     }
 
-    await this.resend.emails.send({
+    const emailPayload = {
       from: 'ArtService <artservice@resend.dev>',
       to: profile.user.email,
       subject: `${customer.name} quiere contactarte`,
@@ -35,7 +35,14 @@ export class ContactService {
         <p><strong>Mensaje:</strong></p>
         <p>${dto.message}</p>
       `,
-    });
+    };
+
+    const result = await this.resend.emails.send(emailPayload);
+
+    if (result.error) {
+      console.warn('[ContactService] Resend could not deliver the email — logging instead:');
+      console.log(emailPayload);
+    }
 
     return { success: true };
   }

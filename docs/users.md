@@ -24,19 +24,13 @@ enum Roles {
 
 ## Endpoints
 
-All routes require a valid JWT: `Authorization: Bearer <token>`
+All routes require: `Authorization: Bearer <token>`
 
 ---
 
-### `GET /api/users`
+### `GET /api/users` — role: DEVELOPER
 
-Returns all users. Restricted to `DEVELOPER` role.
-
-**Headers**
-
-```
-Authorization: Bearer <token>
-```
+Returns all registered users.
 
 **Response**
 
@@ -44,7 +38,6 @@ Authorization: Bearer <token>
 [
   {
     "id": "uuid",
-    "googleId": "...",
     "email": "user@gmail.com",
     "name": "John Doe",
     "picture": "https://...",
@@ -57,23 +50,14 @@ Authorization: Bearer <token>
 
 ---
 
-### `PATCH /api/users/me/role`
+### `PATCH /api/users/me/role` — role: any
 
-Updates the role of the currently authenticated user.
-
-**Headers**
-
-```
-Authorization: Bearer <token>
-Content-Type: application/json
-```
+Updates the role of the currently authenticated user. Returns a **fresh JWT** with the new role — no need to re-login.
 
 **Body**
 
 ```json
-{
-  "role": "DEVELOPER"
-}
+{ "role": "DEVELOPER" }
 ```
 
 Accepted values: `"DEVELOPER"` | `"CUSTOMER"`
@@ -81,14 +65,10 @@ Accepted values: `"DEVELOPER"` | `"CUSTOMER"`
 **Response**
 
 ```json
-{
-  "id": "uuid",
-  "role": "DEVELOPER",
-  ...
-}
+{ "token": "<new-jwt-with-updated-role>" }
 ```
 
-> Note: the JWT is not reissued after this call. The new role takes effect on the next login.
+Use this token immediately to authenticate subsequent requests with the new role.
 
 ## Guards and decorators
 
@@ -96,42 +76,24 @@ Defined in `src/modules/auth/` and usable in any module:
 
 ### `@UseGuards(AuthGuard('jwt'), RolesGuard)`
 
-Apply at controller or handler level. `AuthGuard('jwt')` validates the token; `RolesGuard` enforces the role requirement.
+Apply at controller or handler level. `AuthGuard('jwt')` validates the token; `RolesGuard` enforces the role.
 
 ### `@RequireRoles(...roles)`
 
-Sets which roles are allowed to access a route. Must be combined with `RolesGuard`.
+Sets which roles can access a route. Must be combined with `RolesGuard`.
 
 ```ts
-@RequireRoles(Roles.DEVELOPER)           // only developers
-@RequireRoles(Roles.CUSTOMER)            // only customers
-@RequireRoles(Roles.DEVELOPER, Roles.CUSTOMER) // both
+@RequireRoles(Roles.DEVELOPER)
+@RequireRoles(Roles.CUSTOMER)
 ```
 
 ### `@CurrentUser()`
 
-Parameter decorator that returns the JWT payload from the request.
+Parameter decorator that injects the JWT payload.
 
 ```ts
 @CurrentUser() user: JwtPayload
 // user.sub   → userId
 // user.email → email
 // user.role  → 'CUSTOMER' | 'DEVELOPER'
-```
-
-## Usage example for new modules
-
-```ts
-@Controller('some-resource')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
-export class SomeController {
-
-  @Get()
-  @RequireRoles(Roles.CUSTOMER)
-  forCustomers(@CurrentUser() user: JwtPayload) { ... }
-
-  @Post()
-  @RequireRoles(Roles.DEVELOPER)
-  forDevelopers(@CurrentUser() user: JwtPayload) { ... }
-}
 ```

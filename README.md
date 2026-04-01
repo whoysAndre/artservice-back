@@ -2,7 +2,7 @@
 
 REST API for a **developer marketplace** where customers discover and contact freelance developers. Built as a portfolio project to demonstrate production-ready NestJS architecture.
 
-**Live docs → `http://localhost:3000/docs`** (Swagger UI, interactive)
+**Live docs → `https://artservice-back.onrender.com/docs`** (Swagger UI, interactive)
 
 ---
 
@@ -43,7 +43,7 @@ npm run start:dev
 ### 2. Open Swagger UI
 
 ```
-http://localhost:3000/docs
+https://artservice-back.onrender.com/docs
 ```
 
 ### 3. Get a JWT
@@ -51,7 +51,7 @@ http://localhost:3000/docs
 Open this URL in your browser (requires a Google account):
 
 ```
-http://localhost:3000/api/auth/google
+https://artservice-back.onrender.com/api/auth/google
 ```
 
 After Google login the browser shows:
@@ -204,7 +204,7 @@ All variables are validated by Joi on startup — the app **crashes immediately*
 2. APIs & Services → Credentials → **Create OAuth 2.0 Client ID** (Web application)
 3. Add to **Authorized redirect URIs**:
    ```
-   http://localhost:3000/api/auth/google/callback
+   https://"domain"/api/auth/google/callback
    ```
 4. Copy **Client ID** and **Client Secret** to your `.env`
 
@@ -212,10 +212,19 @@ All variables are validated by Joi on startup — the app **crashes immediately*
 
 ## Deploying to production
 
-1. Deploy the API (e.g. Railway — auto-detects NestJS, provides PostgreSQL)
-2. Add the production URL to Google Cloud Console redirect URIs
-3. Set `OAUTH_CALLBACK_URL=https://your-api.com/api/auth/google/callback` in env vars
-4. Verify a domain on [resend.com](https://resend.com) to send emails to any address (free tier: 3,000 emails/month)
+1. Deploy the API (Railway or Render — both auto-detect NestJS and provide PostgreSQL)
+2. Add the production URL to Google Cloud Console → **Authorized redirect URIs**
+3. Set these env vars on the platform:
+   ```env
+   OAUTH_CALLBACK_URL=https://your-api.com/api/auth/google/callback
+   ```
+4. Verify a domain on [resend.com](https://resend.com) to send emails to any address (free tier: 3,000 emails/month), then update the `from` address in `contact.service.ts`
+
+> **Render free tier:** the service sleeps after 15 min of inactivity — first request takes ~30s to wake up. Mention this to anyone testing the live URL.
+
+## Email behaviour
+
+The contact endpoint always returns `{ success: true }`. If Resend cannot deliver (sandbox / unverified domain), the email payload is logged to the server console instead of throwing an error. This keeps the API testable in any environment without a verified domain.
 
 ---
 

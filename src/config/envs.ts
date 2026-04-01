@@ -25,7 +25,10 @@ const envSchema = joi
     CLOUDINARY_API_KEY: joi.string().required(),
     CLOUDINARY_API_SECRET: joi.string().required(),
     FRONTEND_URL: joi.string().optional().default('http://localhost:3001'),
-    OAUTH_CALLBACK_URL: joi.string().optional().default('http://localhost:3000/api/auth/google/callback'),
+    OAUTH_CALLBACK_URL: joi
+      .string()
+      .optional()
+      .default('http://localhost:3000/api/auth/google/callback'),
   })
   .unknown(true);
 

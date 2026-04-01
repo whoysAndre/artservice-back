@@ -4,7 +4,7 @@ Allows a `CUSTOMER` to contact a `DEVELOPER` by sending an email to the develope
 
 ## Endpoint
 
-### `POST /api/contact/:developerProfileId` — rol: CUSTOMER
+### `POST /api/contact/:developerProfileId` — role: CUSTOMER
 
 **Headers**
 ```
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ```json
 {
-  "message": "Hola, me interesa que me hagas una landing page."
+  "message": "Hi, I need a landing page for my startup."
 }
 ```
 
@@ -34,6 +34,8 @@ Content-Type: application/json
 { "success": true }
 ```
 
+Always returns `{ success: true }` — see email delivery note below.
+
 **Errors**
 
 | Code | Reason |
@@ -41,12 +43,16 @@ Content-Type: application/json
 | `404` | Developer profile not found |
 | `403` | Authenticated user is not a CUSTOMER |
 
-## Email sent to the developer
+## Email delivery
 
-- **From:** `ArtService <onboarding@resend.dev>`
+- **From:** `ArtService <artservice@resend.dev>`
 - **To:** developer's registered email
 - **Subject:** `<customer name> quiere contactarte`
 - **Body:** customer name, customer email, and the message
+
+If Resend cannot deliver the email (e.g. sandbox restrictions, unverified domain), the service logs the full email payload to the console and still returns `{ success: true }` — the endpoint never fails due to email issues.
+
+**For production:** verify a domain on [resend.com](https://resend.com) and update the `from` address to use it. Free tier includes 3,000 emails/month.
 
 ## Dependencies
 
