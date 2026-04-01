@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Roles {
+  DEVELOPER
+  CUSTOMER
+}
+
+enum Specialty {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+  MOBILE
+  DEVOPS
+}
+
+model User {
+  id               String            @id @default(uuid())
+  googleId         String            @unique
+  email            String            @unique
+  name             String
+  picture          String?
+  role             Roles             @default(CUSTOMER)
+  developerProfile DeveloperProfile?
+  reviews          Review[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model DeveloperProfile {
+  id                String             @id @default(uuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id])
+  specialties       Specialty[]
+  hourlyRate        Float
+  githubUrl         String
+  reviews           Review[]
+  portfolioProjects PortfolioProject[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Review {
+  id                 String           @id @default(uuid())
+  rating             Int
+  comment            String
+  customerId         String
+  customer           User             @relation(fields: [customerId], references: [id])
+  developerProfileId String
+  developerProfile   DeveloperProfile @relation(fields: [developerProfileId], references: [id])
+  createdAt          DateTime         @default(now())
+
+  @@unique([customerId, developerProfileId])
+}
+
+model PortfolioProject {
+  id                 String           @id @default(uuid())
+  developerProfileId String
+  developerProfile   DeveloperProfile @relation(fields: [developerProfileId], references: [id])
+  title              String
+  description        String
+  imageUrl           String?
+  projectUrl         String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
